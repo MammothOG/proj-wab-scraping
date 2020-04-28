@@ -18,7 +18,6 @@ class Plot(FigureCanvasTkAgg):
 
     def __init__(self, master=None):
         self.figure = plt.Figure(figsize=(6,5), dpi=100)
-        self.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
 
         super().__init__(self.figure, master)
 
@@ -34,6 +33,8 @@ class Plot(FigureCanvasTkAgg):
         xAxis = [10,1,20] 
         yAxis = [2,3,3] 
         self.ax.bar(xAxis,yAxis, color = 'lightsteelblue')
+
+        self.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
 
         # self.df.plot(kind="bar", legend=True, ax=self.ax)
         # self.ax.set_title("The title for yor chart")
