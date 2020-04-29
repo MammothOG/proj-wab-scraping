@@ -86,7 +86,7 @@ def steam_market_data():
             ended = True
         else:
             print("get page = ", page_index) 
-            time.sleep(60)
+            time.sleep(1)
     
 
     df = pd.DataFrame(page_item, columns=col)
@@ -96,4 +96,5 @@ def steam_market_data():
     # print(df.dtypes)
     return df
     
+print(steam_market_url(1))
 print(steam_market_data().sort_values(by=['name']))

@@ -42,6 +42,6 @@ class Plot(FigureCanvasTkAgg):
 
 root = tk.Tk()
 
-app = tk.Frame(master=root)
+app = Plot(master=root)
 
 root.mainloop()
