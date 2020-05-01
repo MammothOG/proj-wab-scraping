@@ -58,6 +58,10 @@ class DataPoller(Thread):
             self.running = False
             print("stop thread")
 
+    def is_running(self):
+        with self.lock:
+            return self.running
+
     def scrap_data(self):
 
         # building link to locate price and quantity of  items
@@ -89,14 +93,14 @@ class DataPoller(Thread):
 
 
 if __name__ == "__main__":
-    poller_prisma = DataPoller("Prisma 2 Case", timer=60)
-    poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=60)
+    poller_prisma = DataPoller("Prisma 2 Case", timer=1200)
+    poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=1200)
 
     poller_prisma.start()
     poller_phoenix.start()
 
-    while poller_prisma.running and poller_phoenix.running:
-        time.sleep(2)
+    while poller_prisma.is_running() and poller_phoenix.is_running():
+        time.sleep(10)
 
     df_prisma = poller_prisma.get_data_frame()
     df_phoenix = poller_phoenix.get_data_frame()
