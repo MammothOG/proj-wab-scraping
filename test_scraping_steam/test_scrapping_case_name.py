@@ -16,28 +16,21 @@ import requests as rq
 import time
 
 
-class MainWindow(tk.Frame):
-    """This is the main window of our programm"""
 
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.pack()
-    
-        self.master.title("Mon programme de bourse")
     
         
-class Plot(FigureCanvasTkAgg):
+class MainWindow(FigureCanvasTkAgg):
 
     def __init__(self,name_case, master=None):
       
         self.window = tk.Tk()
-        self.window.geometry('1920x1080')
+        self.window.geometry('1600x900')
         self.window.resizable(0,0)
         self.case=name_case
 
         self.scrollbar = tk.Scrollbar(self.window)
         self.scrollbar.pack(side="right", fill="y")
+    
 
         self.listbox = tk.Listbox(self.window, yscrollcommand=self.scrollbar.set)
         for i in self.case:
@@ -45,11 +38,14 @@ class Plot(FigureCanvasTkAgg):
         self.listbox.pack(side="left", fill="both")
 
         self.scrollbar.config(command=self.listbox.yview)
+        
+        self.leave = tk.Button(self.window, text='Quitter', command = self.window.destroy)
+        self.leave.pack(side="bottom", fill="both")
 
         self.window.mainloop()
         
         
-        """self.figure = plt.Figure(figsize=(6,5), dpi=100)
+        """self.figure = plt.Figure(figsize=(6,5) dpi=100)
 
         super().__init__(self.figure, master)
 
@@ -72,31 +68,37 @@ class Plot(FigureCanvasTkAgg):
         # self.ax.set_title("The title for yor chart")"""
     
 
-class recup_case():
-    def __init__(self,master=None):
-        self.urlbase="https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&appid=730&q=case#p"
-        self.table_case=[]
-        self.page=25
+class RecupCase():
+    def __init__(self, master=None):
+        self.urlbase="https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&appid=730&q=case#p1_default"
+        self.table_case = []
+        self.page = 25
         
-        for i in range(1,self.page+1):
-            time.sleep(10)
+    def recup(self):
+        
+        table_case = self.table_case
+        url = self.urlbase
+        """for i in range(1,26):
+            time.sleep(6)"""
             
-            url='https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&appid=730&q=case#p{page}_default'.format(page=str(i))
-            print(url)
-            page = rq.get(url)
-            print(page)
-            soup = BeautifulSoup(page.text, 'lxml')
+        print(url)
+        page = rq.get(url)
+        print(page)
+        soup = BeautifulSoup(page.text, 'lxml')
             
-            element = soup.find_all('span',class_="market_listing_item_name" )
-            for k in element:
-                self.table_case.append(k.text)
-            element.attrs = {}
-        print(self.table_case)
+        element = soup.find_all('span', class_="market_listing_item_name" )
+        for k in element:
+            table_case.append(k.text)
+    
+        return table_case
 
 
 
+recup_case = RecupCase()
+name_case = recup_case.recup()
+print(name_case)
+#MainWindow(name_case)
 
-name_case=recup_case()
-#app = Plot(name_case)
+
 
 #root.mainloop()

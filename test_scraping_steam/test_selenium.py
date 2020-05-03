@@ -1,6 +1,7 @@
 import time
 import urllib.parse
 from threading import Thread, Lock
+import test_scrapping_case_name
 
 import pandas as pd
 from selenium import webdriver
@@ -11,28 +12,28 @@ class DataPoller(Thread):
         self.lock = Lock()
         self.running = False
 
-        self.game_id = 730
-        self.item_name = name
-        self.condition = condition
+        self.game_id = 730 #id de cs go (url)
+        self.item_name = name #idem
+        self.condition = condition #pour arme 
 
-        self.start_time = 0
+        self.start_time = 0 #cb de temps le programme doit tourner
         self.timer = timer
-        self.refresh = refresh
+        self.refresh = refresh #temps de rafraichissement de scraping
 
         # url_name = "{} ({})".format(self.item_name, self.condition)
         url_name = "{}".format(self.item_name)
-        parsed_name = urllib.parse.quote(url_name)
+        parsed_name = urllib.parse.quote(url_name) #convertir le nom en nom pour url
         self.adresse = "https://steamcommunity.com/market/listings/{game_id}/{item_name}" \
                         .format(game_id=self.game_id, item_name=parsed_name)
         
         self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(self.refresh/2)
+        self.driver.implicitly_wait(20)
         self.driver.get(self.adresse)
 
         self.buf = []
 
 
-    timer_check = lambda self: time.time() - self.start_time > self.timer
+    timer_check = lambda self: time.time() - self.start_time > self.timer  #temps écouler depuis l'ouverture du programme (regard si supérieur au timer imposé)
 
     def run(self):
         counter = 0
@@ -65,7 +66,7 @@ class DataPoller(Thread):
     def scrap_data(self):
 
         # building link to locate price and quantity of  items
-        sale = "market_commodity_order_summary"
+        sale = "market_commodity_buyrequests"
         xpath_quantity = "//div[@id='{}']/span[1]".format(sale)
         xpath_price = "//div[@id='{}']/span[2]".format(sale)
 
@@ -78,9 +79,9 @@ class DataPoller(Thread):
         quantity = int(quantity_element.text)
         price = float(price_element.text.replace("$", ""))
 
-        self.buf.append([time_stamp, quantity, price])
+        self.buf.append([time_stamp, quantity, price])#time_stamp en seconde depuis le 1er janvier 1970
 
-    def get_data_frame(self):
+    def get_data_frame(self): #remplir la dataframe avec le buf puis le vider
         with self.lock:
             print("get data")
             col = ["time", "quantity", "price"]
@@ -93,18 +94,19 @@ class DataPoller(Thread):
 
 
 if __name__ == "__main__":
-    poller_prisma = DataPoller("Sticker | Clan-Mystik (Holo) | Katowice 2014", timer=60)
-    # poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=1200)
+    poller_prisma = DataPoller("Prisma 2 Case", timer=1200)
+    poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=1200)
 
     poller_prisma.start()
-    # poller_phoenix.start()
+    poller_phoenix.start()
+    dataframe_table=[]
 
-    while poller_prisma.is_running(): # and poller_phoenix.is_running():
+    while poller_prisma.is_running() and poller_phoenix.is_running():
+    
         time.sleep(10)
 
     df_prisma = poller_prisma.get_data_frame()
-    print(df_prisma)
-    # df_phoenix = poller_phoenix.get_data_frame()
+    df_phoenix = poller_phoenix.get_data_frame()
     
-    # df_prisma.to_csv("prisma.csv")
-    # df_phoenix.to_csv("phoenix.csv")
+    df_prisma.to_csv("prisma.csv")
+    df_phoenix.to_csv("phoenix.csv")
