@@ -26,7 +26,7 @@ class DataPoller(Thread):
                         .format(game_id=self.game_id, item_name=parsed_name)
         
         self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(20)
+        self.driver.implicitly_wait(self.refresh/2)
         self.driver.get(self.adresse)
 
         self.buf = []
@@ -65,7 +65,7 @@ class DataPoller(Thread):
     def scrap_data(self):
 
         # building link to locate price and quantity of  items
-        sale = "market_commodity_buyrequests"
+        sale = "market_commodity_order_summary"
         xpath_quantity = "//div[@id='{}']/span[1]".format(sale)
         xpath_price = "//div[@id='{}']/span[2]".format(sale)
 
@@ -93,17 +93,18 @@ class DataPoller(Thread):
 
 
 if __name__ == "__main__":
-    poller_prisma = DataPoller("Prisma 2 Case", timer=1200)
-    poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=1200)
+    poller_prisma = DataPoller("Sticker | Clan-Mystik (Holo) | Katowice 2014", timer=60)
+    # poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=1200)
 
     poller_prisma.start()
-    poller_phoenix.start()
+    # poller_phoenix.start()
 
-    while poller_prisma.is_running() and poller_phoenix.is_running():
+    while poller_prisma.is_running(): # and poller_phoenix.is_running():
         time.sleep(10)
 
     df_prisma = poller_prisma.get_data_frame()
-    df_phoenix = poller_phoenix.get_data_frame()
+    print(df_prisma)
+    # df_phoenix = poller_phoenix.get_data_frame()
     
-    df_prisma.to_csv("prisma.csv")
-    df_phoenix.to_csv("phoenix.csv")
+    # df_prisma.to_csv("prisma.csv")
+    # df_phoenix.to_csv("phoenix.csv")
