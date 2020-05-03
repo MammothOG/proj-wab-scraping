@@ -19,31 +19,31 @@ import time
 
     
         
-class MainWindow(FigureCanvasTkAgg):
+class MainWindow(tk.Frame):
 
-    def __init__(self,name_case, master=None):
-      
-        self.window = tk.Tk()
-        self.window.geometry('1600x900')
-        self.window.resizable(0,0)
-        self.case=name_case
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
 
-        self.scrollbar = tk.Scrollbar(self.window)
+        self.scrollbar = tk.Scrollbar(self)
         self.scrollbar.pack(side="right", fill="y")
-    
-
-        self.listbox = tk.Listbox(self.window, yscrollcommand=self.scrollbar.set)
-        for i in self.case:
-            self.listbox.insert("end", i)
-        self.listbox.pack(side="left", fill="both")
-
+        self.load_scrollbar("file_name.json")
         self.scrollbar.config(command=self.listbox.yview)
-        
-        self.leave = tk.Button(self.window, text='Quitter', command = self.window.destroy)
+        self.leave = tk.Button(self, text='Quitter', command=self.master.destroy)
         self.leave.pack(side="bottom", fill="both")
 
-        self.window.mainloop()
-        
+    def load_scrollbar(self, file_name):
+        """refresh scroll bar"""
+        cases = [] # load json 
+        self.listbox = tk.Listbox(self, yscrollcommand=self.scrollbar.set)
+        for case in cases:
+            self.listbox.insert("end", case)
+        self.listbox.pack(side="left", fill="both")
+
+class Figure(FigureCanvasTkAgg):
+
+    def __init__(self, master=None):
         
         """self.figure = plt.Figure(figsize=(6,5) dpi=100)
 
@@ -94,11 +94,10 @@ class RecupCase():
 
 
 
-recup_case = RecupCase()
-name_case = recup_case.recup()
-print(name_case)
-#MainWindow(name_case)
+# recup_case = RecupCase()
+# name_case = recup_case.recup()
+# print(name_case)
 
-
-
-#root.mainloop()
+root = tk.Tk()
+app = MainWindow(master=root)
+app.mainloop()
