@@ -3,7 +3,8 @@ import urllib.parse
 from threading import Thread, Lock
 import pandas as pd
 from selenium import webdriver
-import test_scrapping_case_name as scn
+from fenetre import MainWindow
+
 import tkinter as tk
 class DataPoller(Thread):
     def __init__(self, name, condition=None, timer=0, refresh=10):
@@ -92,9 +93,26 @@ class DataPoller(Thread):
 
 
 
-if __name__ == "__main__":
+def scrapping_start(liste_choix):
     
-    recup_case = scn.RecupCase()
+    poller=[]
+    case_scrap=[]
+    GLOBAL_COUNTER = 1
+    print(liste_choix)
+    
+    for name in liste_choix:
+        poller.append(DataPoller(name,timer = 3))
+    for thread in liste_choix:
+        poller[liste_choix.index(thread)].start()
+    for thread in liste_choix:
+        poller[liste_choix.index(thread)].join()
+
+    for case in liste_choix:
+        case_scrap.append(poller[liste_choix.index(case)].get_data_frame())
+    for case in liste_choix:
+        case_scrap[liste_choix.index(case)].to_csv("{name}.csv".format(name=liste_choix[liste_choix.index(case)]))
+        return case_scrap
+    """recup_case = scn.RecupCase()
     name_case = recup_case.recup()
     
     root = tk.Tk()
@@ -121,5 +139,5 @@ if __name__ == "__main__":
     
     df_choose.to_csv("{name}.csv".format(name=name_choose))
     #df_prisma.to_csv("prisma.csv")
-    #df_phoenix.to_csv("phoenix.csv")
+    #df_phoenix.to_csv("phoenix.csv")"""
     

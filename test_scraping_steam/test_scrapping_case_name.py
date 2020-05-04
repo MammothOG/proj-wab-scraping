@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May  3 00:22:21 2020
+Created on Sun May  3 18:19:50 2020
 
 @author: Yohan Arnoux
 """
@@ -10,10 +10,10 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandas import DataFrame
-import test_selenium
 from bs4 import BeautifulSoup
 import requests as rq
 import time
+import json
 
 
 
@@ -24,22 +24,37 @@ class MainWindow(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
+        self.master.geometry("1600x900")
+        self.master.resizable(width=False, height=False)
         self.pack()
 
         self.scrollbar = tk.Scrollbar(self)
-        self.scrollbar.pack(side="right", fill="y")
-        self.load_scrollbar("file_name.json")
+        self.scrollbar.pack(side="left", fill='y')
+        self.load_scrollbar("Case_name.json")
         self.scrollbar.config(command=self.listbox.yview)
-        self.leave = tk.Button(self, text='Quitter', command=self.master.destroy)
+        self.leave = tk.Button(self, text='valider')
+        self.leave.bind('<ButtonRelease-1>',self.clic)
         self.leave.pack(side="bottom", fill="both")
+        self.name_choose=""
+ 
 
     def load_scrollbar(self, file_name):
-        """refresh scroll bar"""
-        cases = [] # load json 
+    
+        with open(str(file_name)) as json_data:
+                cases = json.load(json_data)
         self.listbox = tk.Listbox(self, yscrollcommand=self.scrollbar.set)
         for case in cases:
             self.listbox.insert("end", case)
-        self.listbox.pack(side="left", fill="both")
+        #self.listbox.bind('<ButtonRelease-1>',self.clic)
+        self.listbox.pack(side="left")
+          ## on associe l'évènement "relachement du bouton gauche la souris" à la listbox
+    def clic(self,e):
+        i=self.listbox.curselection()  ## Récupération de l'index de l'élément sélectionné
+        
+        self.name_choose = self.listbox.get(i)  ## On retourne l'élément (un string) sélectionné
+        
+
+    
 
 class Figure(FigureCanvasTkAgg):
 
@@ -77,27 +92,24 @@ class RecupCase():
     def recup(self):
         
         table_case = self.table_case
-        url = self.urlbase
-        """for i in range(1,26):
-            time.sleep(6)"""
-            
-        print(url)
+        url = self.urlbase           
         page = rq.get(url)
-        print(page)
         soup = BeautifulSoup(page.text, 'lxml')
             
         element = soup.find_all('span', class_="market_listing_item_name" )
         for k in element:
             table_case.append(k.text)
-    
+        with open('Case_name.json', 'w') as fp:
+                json.dump(table_case, fp)
         return table_case
 
 
 
-# recup_case = RecupCase()
-# name_case = recup_case.recup()
-# print(name_case)
+"""recup_case = RecupCase()
+name_case = recup_case.recup()
 
 root = tk.Tk()
 app = MainWindow(master=root)
 app.mainloop()
+
+name_choose=app.name_choose"""
