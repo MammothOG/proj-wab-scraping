@@ -36,7 +36,6 @@ class DataPoller(Thread):
     timer_check = lambda self: time.time() - self.start_time > self.timer  #temps écouler depuis l'ouverture du programme (regard si supérieur au timer imposé)
 
     def run(self):
-        counter = 0
         self.running = True
         self.start_time = time.time()
         try:

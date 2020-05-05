@@ -18,17 +18,13 @@ import json
 from threading import Thread
 
 
-
-
-
-    
-        
 class MainWindow(tk.Frame):
 
     def __init__(self, master=None):
         
         super().__init__(master)
         
+        # ?????????????
         import poller
         
        
@@ -50,44 +46,47 @@ class MainWindow(tk.Frame):
         self.subplot_1 = self.fig.add_subplot(1,1,1)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)  # A tk.DrawingArea.
         self.canvas.get_tk_widget().grid(row=1, column=5)
-        
-        
+
         self.scrollbar_choice = tk.Scrollbar(self)
         #self.scrollbar_choice.pack(expand=True, side="left")
         self.scrollbar_choice.grid(row=1, column=1)
-        self.load_scrollbar_choice("Case_name.json")
-        self.scrollbar_choice.config(command=self.listbox_choice.yview)
-        
+
         self.scrollbar_choosen = tk.Scrollbar(self)
         #self.scrollbar_choosen.pack(expand=True, side="right", )
         self.scrollbar_choosen.grid(row=3, column=1)
-        self.listbox_choosen = tk.Listbox(self,width=30, height=25, yscrollcommand=self.scrollbar_choosen.set)
-        self.load_scrollbar_choosen()
-        self.scrollbar_choosen.config(command=self.listbox_choosen.yview)
+
+        self.listbox_choosen = tk.Listbox(self, yscrollcommand=self.scrollbar_choosen.set)
+        self.listbox_choosen.bind('<Double-Button-1>',self.unload_scrollbar_choosen)
+        #self.listbox_choosen.pack(side="right")
+        self.listbox_choosen.grid(row=3, column=2)
         
+        self.listbox_choice = tk.Listbox(self,width=30, height=25, yscrollcommand=self.scrollbar_choice.set)
+        self.listbox_choice.bind('<Double-Button-1>',self.clic)
+        #self.listbox_choice.pack(side="left")
+        self.listbox_choice.grid(row=1, column=2)
+
+        self.scrollbar_choice.config(command=self.listbox_choice.yview)
+        self.load_scrollbar_choice("Case_name.json")
+        
+        self.scrollbar_choosen.config(command=self.listbox_choosen.yview)
+        self.load_scrollbar_choosen()
+
         self.valide = tk.Button(self, text='valider', width=15, height=2)
         #self.valide.pack(side="bottom", fill="both")
         self.valide.grid(row=2, column =3)
-        self.leave=tk.Button(self, text='Quitter', width=15, height=2, command=self.master.destroy)
+
+        self.leave = tk.Button(self, text='Quitter', width=15, height=2, command=self.master.destroy)
         #self.leave.pack(side="bottom", fill="both")
         self.leave.grid(row=4, column = 2)
         
-     
-    
-       
-        
-        
-
     def load_scrollbar_choice(self, file_name):
     
         with open(str(file_name)) as json_data:
                 cases = json.load(json_data)
-        self.listbox_choice = tk.Listbox(self,width=30, height=25, yscrollcommand=self.scrollbar_choice.set)
+        
         for case in cases:
             self.listbox_choice.insert("end", case)
-        self.listbox_choice.bind('<Double-Button-1>',self.clic)
-        #self.listbox_choice.pack(side="left")
-        self.listbox_choice.grid(row=1, column=2)
+        
           ## on associe l'évènement "relachement du bouton gauche la souris" à la listbox
         
     def load_scrollbar_choosen(self):
@@ -95,15 +94,9 @@ class MainWindow(tk.Frame):
         if self.name_choose !="" and self.name_choose not in self.liste_choix:
             self.listbox_choosen.insert("end", self.name_choose)
             self.liste_choix.append(self.name_choose)
-        self.listbox_choosen.bind('<Double-Button-1>',self.unload_scrollbar_choosen)
-        #self.listbox_choosen.pack(side="right")
-        self.listbox_choosen.grid(row=3, column=2)
-        
-        
         
 
-          ## on associe l'évènement "relachement du bouton gauche la souris" à la listbox
-        
+    ## on associe l'évènement "relachement du bouton gauche la souris" à la listbox    
     def clic(self,e):
         i=self.listbox_choice.curselection()  ## Récupération de l'index de l'élément sélectionné
         self.name_choose = self.listbox_choice.get(i)  ## On retourne l'élément (un string) sélectionné
@@ -138,13 +131,6 @@ class MainWindow(tk.Frame):
         self.update_plot(COUNTER,dataframe,column)
         self.COUNTER+=1"""
         
-        
-        
-        
-
-           
-    
-
 class RecupCase():
     def __init__(self, master=None):
         self.urlbase="https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&appid=730&q=case#p1_default"

@@ -1,47 +1,64 @@
+import json
 import tkinter as tk
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandas import DataFrame
 
 
 class MainWindow(tk.Frame):
-    """This is the main window of our programm"""
 
-    def __init__(self, master=None):
-        super().__init__(master)
+    CASE_NAME = "case_name.json"
+
+    def __init__(self, master):
+        tk.Frame.__init__(self, master, background="blue")
         self.master = master
-        self.pack()
-    
-        self.master.title("Mon programme de bourse")
+        self.pack(fill=tk.Y, side=tk.LEFT)
 
-class Plot(FigureCanvasTkAgg):
+        self.button = tk.Button(self, text="Display", command=self.on_display)
+        self.button.pack(side=tk.BOTTOM)
 
-    def __init__(self, master=None):
-        self.figure = plt.Figure(figsize=(6,5), dpi=100)
+        self.cases = []
+        self.listbox_items = tk.Listbox(self, selectmode=tk.MULTIPLE)
+        self.listbox_items.pack(fill=tk.Y, side=tk.LEFT)
+        self.load_items()
 
-        super().__init__(self.figure, master)
-
-        self.ax = self.figure.add_subplot(111)
 
         # data sample
         data = {'Country': ['US','CA','GER','UK','FR'],
                     'GDP_Per_Capita': [45000,42000,52000,49000,47000]
                 }
-        self.df = DataFrame(data, columns=['Country','GDP_Per_Capita'])
-
+        df = DataFrame(data, columns=['Country','GDP_Per_Capita'])
         # create figure here 
         xAxis = [10,1,20] 
         yAxis = [2,3,3] 
+
+        self.figure = plt.Figure(figsize=(6,5), dpi=100)
+        self.ax = self.figure.add_subplot(111)
         self.ax.bar(xAxis,yAxis, color = 'lightsteelblue')
 
-        self.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+        self.graph = FigureCanvasTkAgg(self.figure, master)
 
-        # self.df.plot(kind="bar", legend=True, ax=self.ax)
-        # self.ax.set_title("The title for yor chart")
+        self.tk_graph = self.graph.get_tk_widget()
 
+        self.tk_graph.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-root = tk.Tk()
+    def load_items(self):
+        with open(str(self.CASE_NAME)) as json_data:
+            self.cases = json.load(json_data)
+        
+        for case in self.cases:
+            self.listbox_items.insert(tk.END, case)
+    
+    def on_display(self):
+        print("CLICKED")
 
-app = Plot(master=root)
+        self.items_selected = [self.cases[int(index)] for index in self.listbox_items.curselection()]
+        print(self.items_selected)
 
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    app = MainWindow(master=root)
+
+    app.mainloop()
