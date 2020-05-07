@@ -3,7 +3,6 @@ import urllib.parse
 from threading import Thread, Lock
 import pandas as pd
 from selenium import webdriver
-from fenetre import MainWindow
 
 import tkinter as tk
 class DataPoller(Thread):
@@ -79,60 +78,10 @@ class DataPoller(Thread):
         price = float(price_element.text.replace("$", ""))
 
         self.buf.append([time_stamp, quantity, price])#time_stamp en seconde depuis le 1er janvier 1970
+        # self.buf["time"].append([time_stamp, quantity, price])
 
     def get_data(self): #remplir la dataframe avec le buf puis le vider
         with self.lock:
             buf = list(self.buf)
             self.buf = []
             return buf
-
-
-
-def scrapping_start(liste_choix):
-    
-    poller=[]
-    case_scrap=[]
-    GLOBAL_COUNTER = 1
-    print(liste_choix)
-    
-    for name in liste_choix:
-        poller.append(DataPoller(name,timer = 3))
-    for thread in liste_choix:
-        poller[liste_choix.index(thread)].start()
-    for thread in liste_choix:
-        poller[liste_choix.index(thread)].join()
-
-    for case in liste_choix:
-        case_scrap.append(poller[liste_choix.index(case)].get_data_frame())
-    for case in liste_choix:
-        case_scrap[liste_choix.index(case)].to_csv("{name}.csv".format(name=liste_choix[liste_choix.index(case)]))
-        return case_scrap
-    """recup_case = scn.RecupCase()
-    name_case = recup_case.recup()
-    
-    root = tk.Tk()
-    app = scn.MainWindow(master=root)
-    app.mainloop()
-    name_choose=app.name_choose
-    
-    
-    poller_choose =  DataPoller(name_choose, timer=1200)
-    #poller_prisma = DataPoller("Prisma 2 Case", timer=1200)
-    #poller_phoenix = DataPoller("Operation Phoenix Weapon Case", timer=1200)
-
-    poller_choose.start()
-    #poller_prisma.start()
-    #poller_phoenix.start()
-
-
-    
-    poller_choose.join()
-    
-    df_choose=poller_choose.get_data_frame()
-    #df_prisma = poller_prisma.get_data_frame()
-    #df_phoenix = poller_phoenix.get_data_frame()
-    
-    df_choose.to_csv("{name}.csv".format(name=name_choose))
-    #df_prisma.to_csv("prisma.csv")
-    #df_phoenix.to_csv("phoenix.csv")"""
-    
