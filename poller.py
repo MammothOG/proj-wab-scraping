@@ -33,7 +33,7 @@ class DataPoller(Thread):
         self.buf = []
 
 
-    timer_check = lambda self: time.time() - self.start_time > self.timer  #temps écouler depuis l'ouverture du programme (regard si supérieur au timer imposé)
+    timer_check = lambda self: time.time() - self.start_time > self.timer and self.timer > 0  #temps écouler depuis l'ouverture du programme (regard si supérieur au timer imposé)
 
     def run(self):
         self.running = True
@@ -41,7 +41,7 @@ class DataPoller(Thread):
         try:
             while True:
                 if not self.running or self.timer_check():
-                    self.stop()
+                    # self.stop()
                     break
                 
                 with self.lock:
@@ -56,7 +56,7 @@ class DataPoller(Thread):
     def stop(self):
         with self.lock:
             self.running = False
-            print("stop thread")
+            print("stop ", self.item_name)
 
     def is_running(self):
         with self.lock:
@@ -80,15 +80,11 @@ class DataPoller(Thread):
 
         self.buf.append([time_stamp, quantity, price])#time_stamp en seconde depuis le 1er janvier 1970
 
-    def get_data_frame(self): #remplir la dataframe avec le buf puis le vider
+    def get_data(self): #remplir la dataframe avec le buf puis le vider
         with self.lock:
-            print("get data")
-            col = ["time", "quantity", "price"]
-            data_frame = pd.DataFrame(data=self.buf, columns=col)
-
+            buf = list(self.buf)
             self.buf = []
-            
-            return data_frame
+            return buf
 
 
 

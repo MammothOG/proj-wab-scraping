@@ -4,7 +4,6 @@ Created on Sun May  3 18:19:50 2020
 
 @author: Yohan Arnoux
 """
-
 import pandas as pd
 import tkinter as tk
 import matplotlib.pyplot as plt
