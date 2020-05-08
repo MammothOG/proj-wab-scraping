@@ -8,7 +8,7 @@ import datetime
 import tkinter as tk
 class DataPoller(Thread):
     """The data scrapper"""
-    def __init__(self, name, condition=None, timer=0, refresh=10):
+    def __init__(self, name, condition=None, timer=0, refresh=1):
         
         Thread.__init__(self)
         self.lock = Lock()

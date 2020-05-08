@@ -33,6 +33,7 @@ class Mother(Thread):
         self.items_scraper = []
         self.timer = timer
 
+
     def run(self):
         """On update compare the user selected list and the list of scraper and stop or start new scraper"""
         self.running = True
@@ -45,7 +46,7 @@ class Mother(Thread):
                 self.stop()
                 break
             
-            print(self.items_running, self.items_selected)
+            # print(self.items_running)
 
             items_to_run = list(set(self.items_selected) - set(self.items_running.keys()))
             for item_to_run in items_to_run:
@@ -67,8 +68,8 @@ class Mother(Thread):
                     data = scraper.get_data()
                     self.items_running[scraper.item_name] += data
 
-            with self.lock:
-                self.update_plot()
+            # with self.lock:
+            #     self.update_plot()
 
     def stop(self):
         with self.lock:
@@ -87,24 +88,26 @@ class Mother(Thread):
         with self.lock:
             self.items_selected = items_selected
 
-    def update_plot(self):
+    def update_plot(self, ax):
         """Update plot line with current value"""
-        
-        items_data= {}
-        time_list = []
-        price_list = []
-        quantity_list = []
-
+        color_list=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black' ]
+        color=0
         for items, data in self.items_running.items():
+            time_list = []
+            price_list = []
+            quantity_list = []
             for plot in data:
                 time_list.append(plot[self.TIME])
                 price_list.append(plot[self.PRICE])
                 quantity_list.append(plot[self.QUANTITY])
-                
-                items_data[items]=([plot[self.TIME], plot[self.PRICE], plot[self.QUANTITY]])
-              
 
-        return items_data
+            ax.plot(time_list, quantity_list, color=color_list[color], label=items)
+            color+=1
+                
+        #         items_data[items]=([plot[self.TIME], plot[self.PRICE], plot[self.QUANTITY]])
+              
+    # return self.items_running
+    
 # if __name__ == "__main__":
 #     mother = Mother()
 #     mother.start()

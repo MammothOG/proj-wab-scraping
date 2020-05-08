@@ -12,6 +12,8 @@ class MainWindow(tk.Frame):
 
     CASE_NAME = "case_name.json"
 
+    UPMS = 500 # Update per milliseconds
+
     def __init__(self, master):
         tk.Frame.__init__(self, master, background="blue")
         self.master = master
@@ -32,7 +34,7 @@ class MainWindow(tk.Frame):
         # initialize figure
         self.figure = plt.Figure(figsize=(10, 9), dpi=100)
         self.ax = self.figure.add_subplot(111)
-        self.ax.set_ylabel('Prix des items')
+        self.ax.set_ylabel('Quantité')
         self.ax.set_xlabel('Dates')
         self.ax.plot([], [])
 
@@ -76,19 +78,21 @@ class MainWindow(tk.Frame):
         
         """
         print("refresh")
-        items_data = self.mother.update_plot()
-        #self.ax.lines.pop(0)
-        #self.ax.plot(time, price)
-        color_list=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black' ]
-        color=0
-        for item in items_data:
-            self.ax.plot(items_data[item][0], items_data[item][1], color= color_list[color], marker = 'x', )
-            self.ax.tick_params(labelrotation=30,labelsize=7)
-            self.graph.draw()
-            color+=1
+        self.ax.lines = []
+        self.mother.update_plot(self.ax)
+        self.graph.draw()
+        
+        # self.ax.lines.pop(0)
+        # #self.ax.plot(time, price)
+        # color=0
+        # color_list=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black' ]
+        # for item, data in items_data.items():
+        #     self.ax.plot(data[0], data[1], color=color_list[color], marker = 'x', )
+        #     self.ax.tick_params(labelrotation=30,labelsize=7)
+        #     color+=1
             
         
-        self.master.after(2000, self.refresh_graph)
+        self.master.after(self.UPMS, self.refresh_graph)
 
 
 if __name__ == "__main__":
