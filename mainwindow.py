@@ -19,7 +19,7 @@ class MainWindow(tk.Frame):
         self.master = master
 
         # initialize tkinter layout
-        self.pack(fill=tk.Y, side=tk.LEFT)
+        self.pack(fill=tk.BOTH, side=tk.TOP)
 
         self.button = tk.Button(
             master=self, text="Display", command=self.on_display)
