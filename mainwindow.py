@@ -4,7 +4,6 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandas import DataFrame
-
 import mother
 
 
@@ -31,8 +30,10 @@ class MainWindow(tk.Frame):
         self.load_items()
 
         # initialize figure
-        self.figure = plt.Figure(figsize=(6, 5), dpi=100)
+        self.figure = plt.Figure(figsize=(10, 9), dpi=100)
         self.ax = self.figure.add_subplot(111)
+        self.ax.set_ylabel('Prix des items')
+        self.ax.set_xlabel('Dates')
         self.ax.plot([], [])
 
         # create the graph
@@ -71,13 +72,21 @@ class MainWindow(tk.Frame):
         self.mother.join()
 
     def refresh_graph(self):
-
+        """Refresh The graph with the new data send by the poller.py
+        
+        """
         print("refresh")
-        time, price, quantity = self.mother.update_plot()
-        self.ax.lines.pop(0)
-        self.ax.plot(time, price)
-
-        self.graph.draw()
+        items_data = self.mother.update_plot()
+        #self.ax.lines.pop(0)
+        #self.ax.plot(time, price)
+        color_list=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black' ]
+        color=0
+        for item in items_data:
+            self.ax.plot(items_data[item][0], items_data[item][1], color= color_list[color], marker = 'x', )
+            self.ax.tick_params(labelrotation=30,labelsize=7)
+            self.graph.draw()
+            color+=1
+            
         
         self.master.after(2000, self.refresh_graph)
 

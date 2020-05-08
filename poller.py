@@ -3,10 +3,13 @@ import urllib.parse
 from threading import Thread, Lock
 import pandas as pd
 from selenium import webdriver
+import datetime
 
 import tkinter as tk
 class DataPoller(Thread):
+    """The data scrapper"""
     def __init__(self, name, condition=None, timer=0, refresh=10):
+        
         Thread.__init__(self)
         self.lock = Lock()
         self.running = False
@@ -62,6 +65,7 @@ class DataPoller(Thread):
             return self.running
 
     def scrap_data(self):
+        """Starting to scrap data of the selected item on the steam market """
 
         # building link to locate price and quantity of  items
         sale = "market_commodity_buyrequests"
@@ -73,7 +77,9 @@ class DataPoller(Thread):
         price_element = self.driver.find_element_by_xpath(xpath_price)
 
         # clean element 
-        time_stamp = int(time.time())
+        #time_stamp = int(time.time())
+        now = datetime.datetime.now()
+        time_stamp =now.strftime('%Y-%m-%d %H:%M:%S')
         quantity = int(quantity_element.text)
         price = float(price_element.text.replace("$", ""))
 

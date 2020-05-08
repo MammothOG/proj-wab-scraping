@@ -90,18 +90,21 @@ class Mother(Thread):
     def update_plot(self):
         """Update plot line with current value"""
         
-
+        items_data= {}
         time_list = []
         price_list = []
         quantity_list = []
 
-        for _, data in self.items_running.items():
+        for items, data in self.items_running.items():
             for plot in data:
                 time_list.append(plot[self.TIME])
                 price_list.append(plot[self.PRICE])
                 quantity_list.append(plot[self.QUANTITY])
+                
+                items_data[items]=([plot[self.TIME], plot[self.PRICE], plot[self.QUANTITY]])
+              
 
-        return time_list, price_list, quantity_list
+        return items_data
 # if __name__ == "__main__":
 #     mother = Mother()
 #     mother.start()
