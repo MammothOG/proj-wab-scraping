@@ -18,6 +18,8 @@ class MainWindow(tk.Frame):
 
     UPMS = 1000 # Update per milliseconds
 
+    chunk_per_graph = 25
+
     def __init__(self, master):
         tk.Frame.__init__(self, master, background="blue")
         self.master = master
@@ -37,13 +39,15 @@ class MainWindow(tk.Frame):
 
         # initialize figure
         self.figure = plt.Figure(figsize=(10, 9), dpi=100, facecolor ='#2B2E3A')
-        self.ax = self.figure.add_subplot(111)
-        self.ax.set_ylabel('Quantité', color='#C3C4C6')
-        self.ax.set_xlabel('Dates', color='#C3C4C6')
-        self.ax.patch.set_facecolor('#575A63')
-        self.ax.plot([], [])
-        self.ax.yaxis.set_ticks(np.arange(0, 1, 1))
-        self.ax.xaxis.set_ticks(np.arange(0, 1, 1))
+        self.ax_quantity = self.figure.add_subplot(111)
+        self.ax_quantity.set_ylabel('Quantité', color='#C3C4C6')
+        self.ax_quantity.set_xlabel('Dates', color='#C3C4C6')
+        self.ax_quantity.patch.set_facecolor('#575A63')
+        self.ax_quantity.plot([], [])
+        self.ax_price = self.ax_quantity.twinx()
+        self.ax_price.set_ylabel('Prix', color='#C3C4C6')
+        # self.ax_quantity.yaxis.set_ticks(np.arange(0, 1, 1))
+        # self.ax_quantity.xaxis.set_ticks(np.arange(0, 1, 1))
 
         # create the graph
         self.graph = FigureCanvasTkAgg(self.figure, master=self)
@@ -87,8 +91,15 @@ class MainWindow(tk.Frame):
 
         datas = self.mother.get_data()
 
-        self.ax.lines = []
+        self.ax_quantity.lines = []
 
+        # self.ax_price.cla()
+        # self.ax_quantity.cla()
+
+        max_price = 1
+        max_quantity = 1
+        min_time = 0
+        max_time = 1
         for item, data in datas.items():
             time_list = []
             price_list = []
@@ -99,11 +110,32 @@ class MainWindow(tk.Frame):
                 price_list.append(plot[self.mother.PRICE])
                 quantity_list.append(plot[self.mother.QUANTITY])
 
-            self.ax.plot(time_list, quantity_list,
+            self.ax_quantity.plot(time_list,
+                    quantity_list,
                     color=self.items_colors[item],
+                    alpha=0.3,
                     label=item)
+            
+            self.ax_price.scatter(time_list,
+                    price_list,
+                    color=self.items_colors[item], marker = '+', label=item +" price")
 
-            self.ax.legend()
+            self.ax_quantity.tick_params(axis='x',labelrotation=30,
+                            labelsize=7)
+            
+            self.ax_quantity.legend()
+
+            if len(quantity_list) > 0 and max(quantity_list) > max_quantity:
+                max_quantity = max(quantity_list)
+            if len(price_list) > 0 and max(price_list) > max_price:
+                max_price = max(price_list)
+            if len(time_list) > self.chunk_per_graph :
+                min_time = time_list[-self.chunk_per_graph]    
+                max_time = time_list[-1]
+        
+        self.ax_quantity.xaxis.set_ticks(np.arange(min_time, max_time, 2))
+        self.ax_quantity.yaxis.set_ticks(np.arange(0, max_quantity*3, max_quantity/20))
+        self.ax_price.yaxis.set_ticks(np.arange(0, max_price*1.5, max_price/20))
 
         self.graph.draw()
         
