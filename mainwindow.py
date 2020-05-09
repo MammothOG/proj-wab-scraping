@@ -9,6 +9,7 @@ import mother
 
 class MainWindow(tk.Frame):
     """The main and unique window that display curve."""
+    
 
     CASE_NAME = "case_name.json"
 
@@ -17,25 +18,26 @@ class MainWindow(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master, background="blue")
         self.master = master
-
+        self.configure(bg='#2B2E3A')
         # initialize tkinter layout
         self.pack(fill=tk.BOTH, side=tk.TOP)
 
         self.button = tk.Button(
-            master=self, text="Display", command=self.on_display)
+        master=self, text="Display", command=self.on_display)
         self.button.pack(side=tk.BOTTOM)
 
         # initialize of the Listbox
         self.cases = []
-        self.listbox_items = tk.Listbox(self, selectmode=tk.MULTIPLE)
+        self.listbox_items = tk.Listbox(self, selectmode=tk.MULTIPLE, bg="#2B2E3A", fg ="#C3C4C6", selectbackground ='#3C3D40')
         self.listbox_items.pack(fill=tk.BOTH, side=tk.LEFT)
         self.load_items()
 
         # initialize figure
-        self.figure = plt.Figure(figsize=(10, 9), dpi=100)
+        self.figure = plt.Figure(figsize=(10, 9), dpi=100, facecolor ='#2B2E3A')
         self.ax = self.figure.add_subplot(111)
-        self.ax.set_ylabel('Quantité')
-        self.ax.set_xlabel('Dates')
+        self.ax.set_ylabel('Quantité', color='#C3C4C6')
+        self.ax.set_xlabel('Dates', color='#C3C4C6')
+        self.ax.patch.set_facecolor('#575A63')
         self.ax.plot([], [])
 
         # create the graph
@@ -82,14 +84,7 @@ class MainWindow(tk.Frame):
         self.mother.update_plot(self.ax)
         self.graph.draw()
         
-        # self.ax.lines.pop(0)
-        # #self.ax.plot(time, price)
-        # color=0
-        # color_list=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black' ]
-        # for item, data in items_data.items():
-        #     self.ax.plot(data[0], data[1], color=color_list[color], marker = 'x', )
-        #     self.ax.tick_params(labelrotation=30,labelsize=7)
-        #     color+=1
+        
             
         
         self.master.after(self.UPMS, self.refresh_graph)
@@ -97,7 +92,6 @@ class MainWindow(tk.Frame):
 
 if __name__ == "__main__":
     root = tk.Tk()
-
     app = MainWindow(master=root)
 
     def on_closing():
