@@ -1,7 +1,7 @@
 import time
 from threading import Lock, Thread
 
-from poller import DataPoller
+from scraper import Scraper
 
 
 class Mother(Thread):
@@ -51,7 +51,7 @@ class Mother(Thread):
             items_to_run = list(set(self.items_selected) - set(self.items_running.keys()))
             for item_to_run in items_to_run:
                 # lauch titem_to_run
-                data_poller = DataPoller(item_to_run)
+                data_poller = Scraper(item_to_run)
                 data_poller.start()
 
                 self.items_scraper.append(data_poller)
