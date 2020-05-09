@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandas import DataFrame
 import mother
+import random as rd
 
 
 class MainWindow(tk.Frame):
@@ -13,7 +14,7 @@ class MainWindow(tk.Frame):
 
     CASE_NAME = "case_name.json"
 
-    UPMS = 500 # Update per milliseconds
+    UPMS = 1000 # Update per milliseconds
 
     def __init__(self, master):
         tk.Frame.__init__(self, master, background="blue")
@@ -58,6 +59,8 @@ class MainWindow(tk.Frame):
         for case in self.cases:
             self.listbox_items.insert(tk.END, case)
 
+        self.link_item_to_color()
+
     def on_display(self):
         """Call then a user click on display
 
@@ -67,7 +70,7 @@ class MainWindow(tk.Frame):
         self.items_selected = [
             self.cases[int(index)] for index in self.listbox_items.curselection()]
 
-        print("item selected = ", self.items_selected)
+        print("[Main Window] item selected = {}".format(self.items_selected))
 
         self.mother.set_items_selected(self.items_selected)
 
@@ -76,18 +79,36 @@ class MainWindow(tk.Frame):
         self.mother.join()
 
     def refresh_graph(self):
-        """Refresh The graph with the new data send by the poller.py
-        
-        """
-        print("refresh")
+        """Plot The graph with the new data send by the poller.py"""
+
+        datas = self.mother.get_data()
+
         self.ax.lines = []
-        self.mother.update_plot(self.ax)
+
+        for item, data in datas.items():
+            time_list = []
+            price_list = []
+            quantity_list = []
+
+            for plot in data:
+                time_list.append(plot[self.mother.TIME])
+                price_list.append(plot[self.mother.PRICE])
+                quantity_list.append(plot[self.mother.QUANTITY])
+
+            self.ax.plot(time_list, quantity_list,
+                    color=self.items_colors[item], label=item)
+
+            self.ax.legend()
+
         self.graph.draw()
         
-        
-            
-        
         self.master.after(self.UPMS, self.refresh_graph)
+
+    def link_item_to_color(self):
+        self.items_colors = {}
+        for case in self.cases:
+            self.items_colors[case] = (rd.uniform(0, 1), rd.uniform(0, 1),
+                    rd.uniform(0, 1))
 
 
 if __name__ == "__main__":
@@ -95,7 +116,7 @@ if __name__ == "__main__":
     app = MainWindow(master=root)
 
     def on_closing():
-        print("window closed")
+        print("[Main Window] closed")
         app.close_window()
         root.destroy()
 

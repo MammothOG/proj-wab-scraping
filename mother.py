@@ -30,51 +30,55 @@ class Mother(Thread):
         self.items_selected = []
         self.items_running = {}
 
-        self.items_scraper = []
+        self.scrapers = []
         self.timer = timer
 
 
     def run(self):
         """On update compare the user selected list and the list of scraper and stop or start new scraper"""
         self.running = True
-        
+        print("[MOTHER] Starting")
+
         while True:
             time.sleep(self.timer)
 
             if not self.running:
-                print("stop mothead")
+                print("[MOTHER] Stopping")
                 self.stop()
                 break
             
-            # print(self.items_running)
-
             items_to_run = list(set(self.items_selected) - set(self.items_running.keys()))
+            # create all added scrapers 
+            new_scrapers = []
             for item_to_run in items_to_run:
-                # lauch titem_to_run
-                data_poller = Scraper(item_to_run)
-                data_poller.start()
+                new_scraper = Scraper(item_to_run)
 
-                self.items_scraper.append(data_poller)
+                new_scrapers.append(new_scraper)
 
-                self.items_running[item_to_run] = []
+            # starting all new scrapers 
+            for new_scraper in new_scrapers:
+                new_scraper.start()
+
+                self.scrapers.append(new_scraper)
+
+                self.items_running[new_scraper.item_name] = []
+
 
             items_to_stop = list(set(self.items_running.keys()) - set(self.items_selected))
-            for scraper in self.items_scraper:
+            for scraper in self.scrapers:
                 # get_data
-                if scraper.name in items_to_stop:
+                if scraper.item_name in items_to_stop:
                     scraper.stop()
-                    del self.items_running[scraper.name]
+                    del self.items_running[scraper.item_name]
                 else:
                     data = scraper.get_data()
                     self.items_running[scraper.item_name] += data
 
-            # with self.lock:
-            #     self.update_plot()
-
     def stop(self):
         with self.lock:
-            for scraper in self.items_scraper:
+            for scraper in self.scrapers:
                 scraper.stop()
+                scraper.join()
 
             self.running = False
 
@@ -88,29 +92,20 @@ class Mother(Thread):
         with self.lock:
             self.items_selected = items_selected
 
-    def update_plot(self, ax):
+    def get_data(self):
         """Update plot line with current value"""
-        color_list=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black' ]
-        color=0
-        for items, data in self.items_running.items():
-            time_list = []
-            price_list = []
-            quantity_list = []
-            for plot in data:
-                time_list.append(plot[self.TIME])
-                price_list.append(plot[self.PRICE])
-                quantity_list.append(plot[self.QUANTITY])
-
-            ax.plot(time_list, quantity_list, color=color_list[color], label=items)
-            color+=1
-                
-        #         items_data[items]=([plot[self.TIME], plot[self.PRICE], plot[self.QUANTITY]])
-              
-    # return self.items_running
+        with self.lock:
+            return self.items_running
     
-# if __name__ == "__main__":
-#     mother = Mother()
-#     mother.start()
-#     mother.set_items_selected(["Glove Case","Gamma Case","Spectrum Case", "Clutch Case", "Horizon Case", "Prisma Case", "Chroma Case"])
+if __name__ == "__main__":
+    mother = Mother()
+    mother.start()
+    mother.set_items_selected(["Glove Case",
+        "Gamma Case",
+        "Spectrum Case",
+        "Clutch Case",
+        "Horizon Case",
+        "Prisma Case",
+        "Chroma Case"])
 
-#     mother.join()
+    mother.join()

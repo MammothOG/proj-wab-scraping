@@ -5,7 +5,10 @@ import pandas as pd
 from selenium import webdriver
 import datetime
 import re
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 
 import tkinter as tk
 
@@ -43,6 +46,7 @@ class Scraper(Thread):
         self.driver = webdriver.Chrome()
         self.driver.get(self.adresse)
         self.driver.implicitly_wait(self.refresh_rate/2)
+        self.wait = WebDriverWait(self.driver, self.refresh_rate/2)
 
         self.buf = []
 
@@ -53,27 +57,25 @@ class Scraper(Thread):
 
         self.running = True
         self.start_time = time.time()
-        try:
-            while True:
-                time_start_processing = time.time()
 
-                if not self.running or self.timer_check():
-                    break
-                
-                with self.lock:
-                    self.scrap_data()
+        self.wait.until(EC.presence_of_element_located((By.ID,  "market_commodity_forsale_table")))
 
-                processing_duration = time.time() - time_start_processing
+        while True:
+            time_start_processing = time.time()
 
-                assert self.refresh_rate > processing_duration, "PC slow up the refresh rate"
+            if not self.running or self.timer_check():
+                break
+            
+            with self.lock:
+                self.scrap_data()
 
-                time.sleep(self.refresh_rate - processing_duration)
-        except WebDriverException as e:
-            print("[{}] Chrome has been close ({})".format(self.item_name, e))
-            self.running = False
-        else:
-            print("[{}] Closing Chrome".format(self.item_name))
-            self.driver.close()
+            processing_duration = time.time() - time_start_processing
+
+            assert self.refresh_rate > processing_duration, "PC slow up the refresh rate"
+
+            time.sleep(self.refresh_rate - processing_duration)
+        print("[{}] Closing Chrome".format(self.item_name))
+        self.driver.close()
                 
     def stop(self):
         with self.lock:
@@ -97,6 +99,7 @@ class Scraper(Thread):
 
         # get element
         try:
+            
             quantity_element = self.driver.find_element_by_xpath(xpath_quantity)
             price_element = self.driver.find_element_by_xpath(xpath_price)
 
@@ -104,12 +107,12 @@ class Scraper(Thread):
             quantity = int(quantity_element.text)
             price = float(re.findall('\d*\.?\d+', price_element.text)[0])
 
-        except NoSuchElementException as e:
+        except TimeoutException as e:
             print("[{}] Warning : {}".format(self.item_name, e))
 
         now = datetime.datetime.now()
         time_stamp = now.strftime('%Y-%m-%d %H:%M:%S')
-        print("[{}] {} => {}".format(time_stamp, quantity, price))
+        # print("[{}] {} => {}".format(time_stamp, quantity, price))
 
         self.buf.append([time_stamp, quantity, price])#time_stamp en seconde depuis le 1er janvier 1970
 
