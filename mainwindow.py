@@ -7,6 +7,8 @@ from pandas import DataFrame
 import mother
 import random as rd
 
+import numpy as np
+
 
 class MainWindow(tk.Frame):
     """The main and unique window that display curve."""
@@ -40,6 +42,8 @@ class MainWindow(tk.Frame):
         self.ax.set_xlabel('Dates', color='#C3C4C6')
         self.ax.patch.set_facecolor('#575A63')
         self.ax.plot([], [])
+        self.ax.yaxis.set_ticks(np.arange(0, 1, 1))
+        self.ax.xaxis.set_ticks(np.arange(0, 1, 1))
 
         # create the graph
         self.graph = FigureCanvasTkAgg(self.figure, master=self)
@@ -96,7 +100,8 @@ class MainWindow(tk.Frame):
                 quantity_list.append(plot[self.mother.QUANTITY])
 
             self.ax.plot(time_list, quantity_list,
-                    color=self.items_colors[item], label=item)
+                    color=self.items_colors[item],
+                    label=item)
 
             self.ax.legend()
 
