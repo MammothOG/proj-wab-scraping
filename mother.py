@@ -6,7 +6,7 @@ from scraper import Scraper
 
 class Mother(Thread):
     """This thread manage the list of scrapers threads
-    
+
     This thread run while the main window.
 
     """
@@ -46,7 +46,7 @@ class Mother(Thread):
                 print("[MOTHER] Stopping")
                 self.stop()
                 break
-            
+
             items_to_run = list(set(self.items_selected) - set(self.items_running.keys()))
             # create all added scrapers 
             new_scrapers = []
@@ -61,7 +61,7 @@ class Mother(Thread):
 
                 self.scrapers.append(new_scraper)
 
-                self.items_running[new_scraper.item_name] = []
+                self.items_running[new_scraper.item_name] = [[], [], []]
 
 
             items_to_stop = list(set(self.items_running.keys()) - set(self.items_selected))
@@ -72,7 +72,9 @@ class Mother(Thread):
                     del self.items_running[scraper.item_name]
                 else:
                     data = scraper.get_data()
-                    self.items_running[scraper.item_name] += data
+                    self.items_running[scraper.item_name][self.TIME] += data[self.TIME]
+                    self.items_running[scraper.item_name][self.QUANTITY] += data[self.QUANTITY]
+                    self.items_running[scraper.item_name][self.PRICE] += data[self.PRICE]
 
     def stop(self):
         with self.lock:
@@ -96,7 +98,7 @@ class Mother(Thread):
         """Update plot line with current value"""
         with self.lock:
             return self.items_running
-    
+
 if __name__ == "__main__":
     mother = Mother()
     mother.start()

@@ -15,6 +15,11 @@ import tkinter as tk
 
 class Scraper(Thread):
     """The data scrapper"""
+
+    TIME = 0
+    QUANTITY = 1
+    PRICE = 2
+
     def __init__(self, name, timer=0, refresh_rate=1):
         """Initialize and setup the scraper
 
@@ -26,7 +31,7 @@ class Scraper(Thread):
         :type refresh_rate: float
 
         """
-       
+
         Thread.__init__(self)
         self.lock = Lock()
         self.running = False
@@ -41,14 +46,14 @@ class Scraper(Thread):
         url_name = "{}".format(self.item_name)
         parsed_name = urllib.parse.quote(url_name) # convertir le nom en nom pour url
         self.adresse = "https://steamcommunity.com/market/listings/{game_id}/{item_name}" \
-                        .format(game_id=self.game_id, item_name=parsed_name)
-        
+                .format(game_id=self.game_id, item_name=parsed_name)
+
         self.driver = webdriver.Chrome()
         self.driver.get(self.adresse)
         self.driver.implicitly_wait(self.refresh_rate/2)
         self.wait = WebDriverWait(self.driver, self.refresh_rate/2)
 
-        self.buf = []
+        self.reset_buffer()
 
     timer_check = lambda self: time.time() - self.start_time > self.timer and self.timer > 0
 
@@ -65,7 +70,7 @@ class Scraper(Thread):
 
             if not self.running or self.timer_check():
                 break
-            
+
             with self.lock:
                 self.scrap_data()
 
@@ -76,7 +81,7 @@ class Scraper(Thread):
             time.sleep(self.refresh_rate - processing_duration)
         print("[{}] Closing Chrome".format(self.item_name))
         self.driver.close()
-                
+
     def stop(self):
         with self.lock:
             self.running = False
@@ -99,11 +104,11 @@ class Scraper(Thread):
 
         # get element
         try:
-            
+
             quantity_element = self.driver.find_element_by_xpath(xpath_quantity)
             price_element = self.driver.find_element_by_xpath(xpath_price)
 
-            # clean element 
+            # clean element
             quantity = int(quantity_element.text)
             price = float(re.findall('\d*\.?\d+', price_element.text)[0])
 
@@ -114,13 +119,18 @@ class Scraper(Thread):
         time_stamp = now.strftime('%Y-%m-%d %H:%M:%S')
         # print("[{}] {} => {}".format(time_stamp, quantity, price))
 
-        self.buf.append([time_stamp, quantity, price])#time_stamp en seconde depuis le 1er janvier 1970
+        self.buf[self.TIME].append(time_stamp)
+        self.buf[self.QUANTITY].append(quantity)
+        self.buf[self.PRICE].append(price)
 
     def get_data(self): #remplir la dataframe avec le buf puis le vider
         with self.lock:
             buf = list(self.buf)
-            self.buf = []
+            self.reset_buffer()
             return buf
+
+    def reset_buffer(self):
+        self.buf = [[], [], []]
 
 if __name__ == "__main__":
 
