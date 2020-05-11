@@ -21,7 +21,7 @@ class MainWindow(tk.Frame):
 
     UPMS = 1000 # Update per milliseconds
 
-    chunk_per_graph = 20
+    chunk_per_graph = 41
 
     def __init__(self, master):
         tk.Frame.__init__(self, master, background="blue")
@@ -64,7 +64,6 @@ class MainWindow(tk.Frame):
         for graph_index, item in enumerate(self.items_selected):
 
             # self.figure.cla()
-            print(len(self.items_selected), 1, graph_index+1)
             ax_quantity = self.figure.add_subplot(len(self.items_selected), 1, graph_index+1)
             ax_quantity.set_ylabel('Quantité', color='#C3C4C6')
             ax_quantity.set_xlabel('Dates', color='#C3C4C6')
@@ -107,105 +106,54 @@ class MainWindow(tk.Frame):
     def refresh_graph(self):
         """Plot The graph with the new data send by the poller.py"""
 
+        self.master.after(self.UPMS, self.refresh_graph)
+
         datas = self.mother.get_data()
 
-        if len(datas) == len(self.graphics):
+        if len(datas) == len(self.graphics) > 0:
             for item, ax in self.graphics.items():
-
                 # get datas 
                 times = datas[item][self.mother.TIME]
                 quantities = datas[item][self.mother.QUANTITY]
                 prices = datas[item][self.mother.PRICE]
 
-                if len(times) > self.chunk_per_graph:
-                    times_show = times[-self.chunk_per_graph:]
-                    quantities_show = quantities[-self.chunk_per_graph:]
-                    prices_show = prices[-self.chunk_per_graph:]
-                else:
-                    times_show = times
-                    quantities_show = quantities
-                    prices_show = prices
+                if len(times) == 0:
+                    return
 
-                print(times_show, quantities_show, prices_show)
+                if len(times) > self.chunk_per_graph:
+                    times = times[-self.chunk_per_graph:]
+                    quantities = quantities[-self.chunk_per_graph:]
+                    prices = prices[-self.chunk_per_graph:]
+
+                # print(times, quantities, prices)
+
+                ax[self.QUANTITY].cla()
+                ax[self.PRICE].cla()
 
                 # plot quantity
-                ax[self.PRICE].plot(times_show,
-                        prices_show,
+                ax[self.PRICE].plot(times,
+                        prices,
                         color=ax[self.COLOR],
                         label=item
                         )
 
                 # plot price
-                ax[self.QUANTITY].bar(times_show,
-                        quantities_show,
+                ax[self.QUANTITY].bar(times,
+                        quantities,
                         color=ax[self.COLOR],
                         alpha=0.3,
                         label=item
                         )
 
+                ax[self.QUANTITY].yaxis.set_ticks(np.arange(0, max(quantities)*4, quantities[-1]))
+                ax[self.PRICE].yaxis.set_ticks(np.arange(0, max(prices)*2, prices[-1]))
+
+                times_with_step = [t for i, t in enumerate(times) if i%5 ==0]
+                ax[self.QUANTITY].xaxis.set_ticks(times_with_step)
+
+                ax[self.PRICE].legend()
 
             self.graph.draw()
-        self.master.after(self.UPMS, self.refresh_graph)
-                # if len(quantities) > 0:
-                #     max_quantity = max(quantities)
-                #     max_price = max(prices)
-                # else:
-                #     max_quantity = 1
-                #     max_price = 1
-                # ax[self.PRICE].yaxis.set_ticks(np.arange(0, max_price*3, max_price))
-                # ax[self.QUANTITY].yaxis.set_ticks(np.arange(0, max_quantity*3, max_quantity))
-
-
-# #         self.ax_quantity.lines = [] # #         # self.ax_price.cla() #         # self.ax_quantity.cla() # 
-#         max_price = 1
-#         max_quantity = 1
-#         min_time = 0
-#         max_time = 1
-#         for item, data in datas.items():
-#             time_list = []
-#             price_list = []
-#             quantity_list = []
-# 
-#             for plot in data:
-#                 time_list.append(plot[self.mother.TIME])
-#                 price_list.append(plot[self.mother.PRICE])
-#                 quantity_list.append(plot[self.mother.QUANTITY])
-# 
-#             self.ax_quantity.plot(time_list,
-#                     quantity_list,
-#                     color=self.items_colors[item],
-#                     alpha=0.3,
-#                     label=item)
-# 
-#             self.ax_price.scatter(time_list,
-#                     price_list,
-#                     color=self.items_colors[item], marker = '+', label=item +" price")
-# 
-#             self.ax_quantity.tick_params(axis='x',labelrotation=30,
-#                     labelsize=7)
-# 
-#             self.ax_quantity.legend()
-# 
-# #             if len(quantity_list) > 0 and max(quantity_list) > max_quantity:
-# #                 max_quantity = max(quantity_list)
-# #             if len(price_list) > 0 and max(price_list) > max_price:
-# #                 max_price = max(price_list)
-# #             if len(time_list) > self.chunk_per_graph :
-# #                 min_time = time_list[-self.chunk_per_graph]
-# #                 max_time = time_list[-1]
-# 
-#         self.ax_quantity.xaxis.set_ticks(np.arange(min_time, max_time, 2))
-#         self.ax_quantity.yaxis.set_ticks(np.arange(0, max_quantity*3, max_quantity/20))
-#         self.ax_price.yaxis.set_ticks(np.arange(0, max_price*1.5, max_price/20))
-# 
-# 
-
-    def link_item_to_color(self):
-        self.items_colors = {}
-        for case in self.cases:
-            self.items_colors[case] = (rd.uniform(0, 1), rd.uniform(0, 1),
-                    rd.uniform(0, 1))
-
 
 if __name__ == "__main__":
     root = tk.Tk()

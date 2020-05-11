@@ -5,7 +5,7 @@ import pandas as pd
 from selenium import webdriver
 import datetime
 import re
-from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.common.exceptions import TimeoutException, WebDriverException, StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -49,11 +49,13 @@ class Scraper(Thread):
                 .format(game_id=self.game_id, item_name=parsed_name)
 
         self.driver = webdriver.Chrome()
+        self.driver.implicitly_wait(20)
         self.driver.get(self.adresse)
-        self.driver.implicitly_wait(self.refresh_rate/2)
-        self.wait = WebDriverWait(self.driver, self.refresh_rate/2)
 
         self.reset_buffer()
+
+        self.quantity = 0
+        self.price = 0.0
 
     timer_check = lambda self: time.time() - self.start_time > self.timer and self.timer > 0
 
@@ -62,8 +64,6 @@ class Scraper(Thread):
 
         self.running = True
         self.start_time = time.time()
-
-        self.wait.until(EC.presence_of_element_located((By.ID,  "market_commodity_forsale_table")))
 
         while True:
             time_start_processing = time.time()
@@ -99,8 +99,6 @@ class Scraper(Thread):
         xpath_price = "//div[@id='{}']/table/tbody/tr/td[1]".format(sale)
         xpath_quantity = "//div[@id='{}']/table/tbody/tr/td[2]".format(sale)
 
-        quantity = 0
-        price = 0.0
 
         # get element
         try:
@@ -109,19 +107,19 @@ class Scraper(Thread):
             price_element = self.driver.find_element_by_xpath(xpath_price)
 
             # clean element
-            quantity = int(quantity_element.text)
-            price = float(re.findall('\d*\.?\d+', price_element.text)[0])
+            self.quantity = int(quantity_element.text)
+            self.price = float(re.findall('\d*\.?\d+', price_element.text)[0])
 
-        except TimeoutException as e:
+        except StaleElementReferenceException as e:
             print("[{}] Warning : {}".format(self.item_name, e))
 
         now = datetime.datetime.now()
-        time_stamp = now.strftime('%Y-%m-%d %H:%M:%S')
-        # print("[{}] {} => {}".format(time_stamp, quantity, price))
+        time_stamp = now.strftime('%H:%M:%S:%f')
+        # print("[{}] {} => {}".format(time_stamp, self.quantity, self.price))
 
         self.buf[self.TIME].append(time_stamp)
-        self.buf[self.QUANTITY].append(quantity)
-        self.buf[self.PRICE].append(price)
+        self.buf[self.QUANTITY].append(self.quantity)
+        self.buf[self.PRICE].append(self.price)
 
     def get_data(self): #remplir la dataframe avec le buf puis le vider
         with self.lock:
@@ -131,6 +129,23 @@ class Scraper(Thread):
 
     def reset_buffer(self):
         self.buf = [[], [], []]
+
+class element_has_xpaht(object):
+    """An expectation for checking that an element has a particular css class.
+
+    locator - used to find the element
+    returns the WebElement once it has the particular css class
+
+    """
+    def __init__(self, xpath):
+        self.xpath = xpath
+
+    def __call__(self, driver):
+        element = driver.find_element(*self.locator)   # Finding the referenced element
+        if self.css_class in element.get_attribute("class"):
+            return element
+        else:
+            return False
 
 if __name__ == "__main__":
 
