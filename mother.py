@@ -69,7 +69,9 @@ class Mother(Thread):
                 # get_data
                 if scraper.item_name in items_to_stop:
                     scraper.stop()
+                    scraper.join()
                     del self.items_running[scraper.item_name]
+                    self.scrapers.remove(scraper)
                 else:
                     data = scraper.get_data()
                     self.items_running[scraper.item_name][self.TIME] += data[self.TIME]

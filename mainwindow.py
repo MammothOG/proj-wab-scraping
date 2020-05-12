@@ -1,6 +1,7 @@
 import json
 import tkinter as tk
 
+import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandas import DataFrame
@@ -24,15 +25,23 @@ class MainWindow(tk.Frame):
     chunk_per_graph = 41
 
     def __init__(self, master):
-        tk.Frame.__init__(self, master, background="blue")
+        tk.Frame.__init__(self, master)
         self.master = master
         self.configure(bg='#2B2E3A')
         # initialize tkinter layout
         self.pack(fill=tk.BOTH, expand=True)
 
-        self.button = tk.Button(
-                master=self, text="Display", command=self.on_display)
-        self.button.pack(side=tk.BOTTOM)
+        self.frame_button = tk.Frame(self)
+        self.frame_button.configure(bg='#2B2E3A')
+        self.frame_button.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.button_display = tk.Button(
+                master=self.frame_button, text="Display", command=self.on_display)
+        self.button_display.pack(side=tk.LEFT)
+
+        self.button_save = tk.Button(
+                master=self.frame_button, text="Save Data", command=self.save_data_csv)
+        self.button_save.pack(side=tk.TOP)
 
         # initialize of the Listbox
         self.cases = []
@@ -59,6 +68,7 @@ class MainWindow(tk.Frame):
         self.mother.start()
 
     def draw_graph(self):
+        """Define the list of graphics displayed and give them a color"""
 
         self.figure.clf()
         for graph_index, item in enumerate(self.items_selected):
@@ -134,7 +144,7 @@ class MainWindow(tk.Frame):
                 ax[self.PRICE].plot(times,
                         prices,
                         color=ax[self.COLOR],
-                        label=item
+                        label=item+" (quantity = {}, price = {})".format(quantities[-1], prices[-1])
                         )
 
                 # plot price
@@ -145,8 +155,11 @@ class MainWindow(tk.Frame):
                         label=item
                         )
 
-                ax[self.QUANTITY].yaxis.set_ticks(np.arange(0, max(quantities)*4, quantities[-1]))
-                ax[self.PRICE].yaxis.set_ticks(np.arange(0, max(prices)*2, prices[-1]))
+
+                ax[self.QUANTITY].yaxis.set_ticks(np.arange(0, max(quantities)*5, max(quantities)))
+                # TODO marche pas quand *2
+                arange_de_merde = np.arange(0, max(prices)*3, max(prices))
+                ax[self.PRICE].yaxis.set_ticks(arange_de_merde)
 
                 times_with_step = [t for i, t in enumerate(times) if i%5 ==0]
                 ax[self.QUANTITY].xaxis.set_ticks(times_with_step)
@@ -154,6 +167,22 @@ class MainWindow(tk.Frame):
                 ax[self.PRICE].legend()
 
             self.graph.draw()
+
+    def save_data_csv(self):
+        """Save all data scraped in csv files"""
+
+        print("[Main Window] Data saved")
+        datas_to_save = self.mother.get_data()
+
+        for key in datas_to_save:
+            date = datas_to_save[key][self.mother.TIME]
+            quantity = datas_to_save[key][self.mother.QUANTITY]
+            price = datas_to_save[key][self.mother.PRICE]
+            df = DataFrame({'Date':date, 'Quantite': quantity, 'Prix': price})
+
+            now = datetime.datetime.now()
+            date = now.strftime("%d-%m-%Y_%f")
+            df.to_csv("{nom}_{date}.csv".format(nom=key.replace(" ", "-"), date=date))
 
 if __name__ == "__main__":
     root = tk.Tk()
