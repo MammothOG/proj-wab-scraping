@@ -1,0 +1,39 @@
+{
+  "argv": [
+    "C:\\Python37\\python.exe",
+    "-m",
+    "ipykernel_launcher",
+    "-f",
+    "{connection_file}"
+  ],
+  "display_name": "Python 3.7.6 64-bit",
+  "language": "python",
+  "env": {},
+  "metadata": {
+    "interpreter": {
+      "architecture": 3,
+      "path": "C:\\Python37\\python.exe",
+      "version": {
+        "options": {
+          "loose": false,
+          "includePrerelease": false
+        },
+        "loose": false,
+        "raw": "3.7.6-final",
+        "major": 3,
+        "minor": 7,
+        "patch": 6,
+        "prerelease": [
+          "final"
+        ],
+        "build": [],
+        "version": "3.7.6-final"
+      },
+      "sysPrefix": "C:\\Python37",
+      "fileHash": "b57cd1d82fa76a7259c46587700b419de7ecf7e23b2a5eae6a41e91ed07a2bbf18fbbe93aa7df328b9488e5a60ac40aa87a61a6bd789c7fbc6f8e9938c7c407a",
+      "companyDisplayName": "Python Software Foundation",
+      "type": "Unknown",
+      "displayName": "Python 3.7.6 64-bit"
+    }
+  }
+}

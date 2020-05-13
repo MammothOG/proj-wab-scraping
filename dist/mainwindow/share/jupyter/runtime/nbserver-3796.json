@@ -1,0 +1,11 @@
+{
+  "base_url": "/",
+  "hostname": "localhost",
+  "notebook_dir": "E:\\Documents\\ESME\\Cours\\MachineLearning",
+  "password": false,
+  "pid": 3796,
+  "port": 8888,
+  "secure": false,
+  "token": "29d8cc08bc8154ce140067f3c939c311ef0cc282bcc745b6",
+  "url": "http://localhost:8888/"
+}
